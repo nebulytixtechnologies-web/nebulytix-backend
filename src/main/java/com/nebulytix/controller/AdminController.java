@@ -97,4 +97,31 @@ public class AdminController {
         projectService.deleteProject(id);
         return ApiResponse.success("Project deleted successfully", null);
     }
+    
+    /**
+     * GET ALL LEADS (ADMIN DASHBOARD)
+     */
+    @GetMapping
+    public ApiResponse<Page<Lead>> getAllLeads(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("createdAt").descending()
+        );
+
+        return ApiResponse.success(leadService.getAllLeads(pageable));
+    }
+
+    /**
+     * GET SINGLE LEAD DETAILS
+     */
+    @GetMapping("/{id}")
+    public ApiResponse<Lead> getLeadById(@PathVariable Long id) {
+
+        return ApiResponse.success(leadService.getLeadById(id));
+    }
 }
