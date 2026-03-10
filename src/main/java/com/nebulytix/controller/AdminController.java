@@ -198,6 +198,7 @@ public class AdminController {
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("appliedAt").descending());
         return ApiResponse.success(applicationService.getAllApplications(pageable));
+    }
     @PostMapping("add/service")
     public ApiResponse<ServiceResponse> create(@RequestBody ServiceRequest request) {
         return ApiResponse.success(service.create(request));
