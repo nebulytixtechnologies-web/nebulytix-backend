@@ -1,20 +1,36 @@
 package com.nebulytix.controller;
 
-import com.nebulytix.dto.request.LeadRequest;
-import com.nebulytix.dto.response.ApiResponse;
-import com.nebulytix.entity.JobOpening;
-import com.nebulytix.entity.Lead;
-import com.nebulytix.entity.Project;
-import com.nebulytix.service.JobService;
-import com.nebulytix.service.LeadService;
-import com.nebulytix.service.ProjectService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.nebulytix.dto.request.ApplicationRequest;
+import com.nebulytix.dto.request.LeadRequest;
+import com.nebulytix.dto.response.ApiResponse;
+import com.nebulytix.dto.response.ServiceResponse;
+import com.nebulytix.entity.JobApplication;
+import com.nebulytix.entity.JobOpening;
+import com.nebulytix.entity.Lead;
+import com.nebulytix.entity.Project;
+import com.nebulytix.service.ApplicationService;
+import com.nebulytix.service.JobService;
+import com.nebulytix.service.LeadService;
+import com.nebulytix.service.ProjectService;
+import com.nebulytix.service.ServiceService;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Public Controller - Handles all unauthenticated/public API endpoints
@@ -30,7 +46,8 @@ public class PublicController {
     private final ProjectService projectService;  // Service for project-related operations
     private final LeadService leadService;        // Service for lead-related operations
     private final JobService jobService;          // Service for job-related operations
-    
+    private final ServiceService service;
+    private final ApplicationService applicationService;
     /**
      * GET /api/public/projects
      * Retrieves all projects with pagination support
@@ -182,6 +199,21 @@ public class PublicController {
         request.setSource("WHATSAPP_CLICK");
         
         return ApiResponse.success("WhatsApp click logged", leadService.createLead(request));
+    }
+    
+    @GetMapping("getAll/service")
+    public ApiResponse<List<ServiceResponse>> getAll() {
+        return ApiResponse.success(service.getAll());
+    }
+
+    @GetMapping("getServiceById/{id}")
+    public ApiResponse<ServiceResponse> getById(@PathVariable Long id) {
+        return ApiResponse.success(service.getById(id));
+    }
+    
+    @PostMapping("/applyJob")
+    public JobApplication apply(@ModelAttribute ApplicationRequest request) {
+        return applicationService.submitApplication(request);
     }
 }
 
