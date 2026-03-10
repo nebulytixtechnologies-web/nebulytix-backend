@@ -1,13 +1,18 @@
 package com.nebulytix.controller;
 
+import com.nebulytix.dto.request.JobRequest;
 import com.nebulytix.dto.request.ProjectRequest;
 import com.nebulytix.dto.request.ServiceRequest;
 import com.nebulytix.dto.request.UserCreateRequest;
 import com.nebulytix.dto.response.ApiResponse;
+import com.nebulytix.entity.JobApplication;
+import com.nebulytix.entity.JobOpening;
 import com.nebulytix.dto.response.ServiceResponse;
 import com.nebulytix.entity.Lead;
 import com.nebulytix.entity.Project;
 import com.nebulytix.entity.User;
+import com.nebulytix.service.ApplicationService;
+import com.nebulytix.service.JobService;
 import com.nebulytix.service.LeadService;
 import com.nebulytix.service.ProjectService;
 import com.nebulytix.service.ServiceService;
@@ -33,6 +38,8 @@ public class AdminController {
     private final UserService userService;
     private final LeadService leadService;
     private final ProjectService projectService;
+    private final JobService jobService;
+    private final ApplicationService applicationService;
     private final ServiceService service;
     
     // User Management
@@ -105,6 +112,92 @@ public class AdminController {
         return ApiResponse.success("Project deleted successfully", null);
     }
     
+    /**
+     * GET ALL LEADS (ADMIN DASHBOARD)
+     */
+    @GetMapping
+    public ApiResponse<Page<Lead>> getAllLeads(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("createdAt").descending()
+        );
+
+        return ApiResponse.success(leadService.getAllLeads(pageable));
+    }
+
+    /**
+     * GET SINGLE LEAD DETAILS
+     */
+    @GetMapping("/{id}")
+    public ApiResponse<Lead> getLeadById(@PathVariable Long id) {
+
+        return ApiResponse.success(leadService.getLeadById(id));
+    }
+    
+    @PostMapping("/jobs")
+    public ApiResponse<JobOpening> createJob(
+            @Valid @RequestBody JobRequest request,
+            @AuthenticationPrincipal UserDetails hrDetails) {
+        User hr = userService.findByEmail(hrDetails.getUsername());
+        return ApiResponse.success(jobService.createJob(request, hr));
+    }
+    
+    @PutMapping("/jobs/{id}")
+    public ApiResponse<JobOpening> updateJob(
+            @PathVariable Long id,
+            @Valid @RequestBody JobRequest request) {
+        return ApiResponse.success(jobService.updateJob(id, request));
+    }
+    
+    @DeleteMapping("/jobs/{id}")
+    public ApiResponse<Void> deleteJob(@PathVariable Long id) {
+        jobService.deleteJob(id);
+        return ApiResponse.success("Job deleted successfully", null);
+    }
+    
+    @GetMapping("/jobs")
+    public ApiResponse<Page<JobOpening>> getAllJobs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal UserDetails hrDetails) {
+        User hr = userService.findByEmail(hrDetails.getUsername());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("postedAt").descending());
+        
+        if (hr.getRole() == User.Role.ADMIN) {
+            return ApiResponse.success(jobService.getAllJobs(pageable));
+        } else {
+            return ApiResponse.success(jobService.getJobsByHr(hr, pageable));
+        }
+    }
+    
+    // Job Applications Management
+    @GetMapping("/jobs/{jobId}/applications")
+    public ApiResponse<Page<JobApplication>> getJobApplications(
+            @PathVariable Long jobId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("appliedAt").descending());
+        return ApiResponse.success(applicationService.getApplicationsByJob(jobId, pageable));
+    }
+    
+    @PutMapping("/applications/{id}/status")
+    public ApiResponse<JobApplication> updateApplicationStatus(
+            @PathVariable Long id,
+            @RequestParam JobApplication.ApplicationStatus status) {
+        return ApiResponse.success(applicationService.updateApplicationStatus(id, status));
+    }
+    
+    @GetMapping("/applications")
+    public ApiResponse<Page<JobApplication>> getAllApplications(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("appliedAt").descending());
+        return ApiResponse.success(applicationService.getAllApplications(pageable));
     @PostMapping("add/service")
     public ApiResponse<ServiceResponse> create(@RequestBody ServiceRequest request) {
         return ApiResponse.success(service.create(request));

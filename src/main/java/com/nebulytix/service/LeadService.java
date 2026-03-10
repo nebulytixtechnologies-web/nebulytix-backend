@@ -1,16 +1,18 @@
 package com.nebulytix.service;
 
-import com.nebulytix.dto.request.LeadRequest;
-import com.nebulytix.exception.ResourceNotFoundException;
-import com.nebulytix.entity.Lead;
-import com.nebulytix.entity.User;
-import com.nebulytix.repository.LeadRepository;
-import com.nebulytix.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.nebulytix.dto.request.LeadRequest;
+import com.nebulytix.entity.Lead;
+import com.nebulytix.entity.User;
+import com.nebulytix.exception.ResourceNotFoundException;
+import com.nebulytix.repository.LeadRepository;
+import com.nebulytix.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -40,9 +42,10 @@ public class LeadService {
         return leadRepository.save(lead);
     }
     
-    public Page<Lead> getAllLeads(Pageable pageable) {
-        return leadRepository.findAll(pageable);
-    }
+//    public Page<Lead> getAllLeads(Pageable pageable) {
+//        return leadRepository.findAll(pageable);
+//    }
+    
     
     public Page<Lead> getLeadsByStatus(Lead.Status status, Pageable pageable) {
         return leadRepository.findByStatus(status, pageable);
@@ -81,4 +84,15 @@ public class LeadService {
     public long getLeadCountByStatus(Lead.Status status) {
         return leadRepository.countByStatus(status);
     }
+   
+    public Page<Lead> getAllLeads(Pageable pageable) {
+        return leadRepository.findAll(pageable);
+    }
+
+  
+    public Lead getLeadById(Long id) {
+        return leadRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Lead not found with id: " + id));
+    }
+   
 }

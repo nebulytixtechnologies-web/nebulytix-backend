@@ -29,10 +29,22 @@ public class JobService {
         return jobRepository.save(job);
     }
     
+//    @Transactional
+//    public JobOpening updateJob(Long id, JobRequest request) {
+//        JobOpening job = findById(id);
+//        updateJobFromRequest(job, request);
+//        return jobRepository.save(job);
+//    }
     @Transactional
     public JobOpening updateJob(Long id, JobRequest request) {
+
+        System.out.println("Updating job id: " + id);
+        System.out.println("Request data: " + request);
+
         JobOpening job = findById(id);
+
         updateJobFromRequest(job, request);
+
         return jobRepository.save(job);
     }
     
